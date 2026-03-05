@@ -30,11 +30,19 @@
             font-size: 2.5rem;
             color: #003399;
             margin-bottom: 0.5rem;
+            text-transform: capitalize;
         }
 
         header p {
             font-size: 1.1rem;
             color: #7f8c8d;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #003399;
+            margin-top: 2rem;
         }
 
         .birthday-grid {
@@ -45,7 +53,6 @@
             margin: 0 auto;
         }
 
-        /* Estilo base do Card */
         .card {
             background-color: #ffffff;
             border-radius: 15px;
@@ -97,15 +104,6 @@
             border: 1px solid #cce0ff;
         }
 
-        .card:hover .date {
-            background-color: #003399;
-            color: #ffffff;
-            transition: 0.3s ease;
-        }
-
-        /* =========================================
-           ESTILOS PARA O ANIVERSARIANTE DO DIA
-           ========================================= */
         .card.hoje {
             transform: scale(1.05);
             box-shadow: 0 0 25px rgba(255, 204, 0, 0.6);
@@ -148,117 +146,36 @@
 <body>
 
     <header>
-        <h1>🎉 Aniversariantes de Março 🎉</h1>
-        <p>Celebre com nossos associados neste mês especial!</p>
+        <h1 id="titulo-mes">🎉 Aniversariantes do Mês 🎉</h1>
+        <p>Celebre com os nossos associados neste mês especial!</p>
     </header>
 
+    <div id="loading" class="loading">Carregando aniversariantes...</div>
     <main class="birthday-grid" id="grid"></main>
 
     <script>
-        const aniversariantes = [
-            { nome: "LIDIA ANGELICA SAMICO TAVARES", dia: "01/03/1974" },
-            { nome: "MARCELO GUIMARAES RAMOS", dia: "01/03/1974" },
-            { nome: "GABRIEL NUNES CARVALHO", dia: "02/03/1997" },
-            { nome: "JOSE ALCIDEZIO DE OLIVEIRA DOS SANTOS", dia: "02/03/1981" },
-            { nome: "JOSIR ALVES DE OLIVEIRA", dia: "02/03/1964" },
-            { nome: "RUY DE LIMA ALMEIDA", dia: "03/03/1942" },
-            { nome: "LEONARDO FELIPE S. ANDRADE", dia: "04/03/1979" },
-            { nome: "MARCOS SEVERINO MONTEIRO", dia: "05/03/1950" },
-            { nome: "MAGALY NUNES DE GOIS", dia: "06/03/1962" },
-            { nome: "ALANE NAZARE OLIVEIRA SANTOS", dia: "07/03/1988" },
-            { nome: "EMANUEL MESSIAS BARBOSA MOURA JUNIOR", dia: "07/03/1965" },
-            { nome: "EDMAR JOSE DOS SANTOS", dia: "07/03/1964" },
-            { nome: "EDILSON COSTA SANTOS", dia: "07/03/1963" },
-            { nome: "WALDSON FERREIRA DOS SANTOS", dia: "08/03/1984" },
-            { nome: "WASHINGTON NASCIMENTO CRUZ", dia: "08/03/1970" },
-            { nome: "JOSE ASCENDINO DOS SANTOS", dia: "08/03/1956" },
-            { nome: "LEONARDO FRANCA CAMARA", dia: "09/03/1999" },
-            { nome: "ALEXSANDRO LIMA", dia: "09/03/1978" },
-            { nome: "DIONE NICAULES PORTO ESTEVAM", dia: "09/03/1976" },
-            { nome: "JORGE MARCELO CÂMARA ALVES", dia: "09/03/1967" },
-            { nome: "MARIA HELENA COSTA SANTANA", dia: "09/03/1960" },
-            { nome: "JOAO CARLOS GUEDES MILLANI", dia: "10/03/1983" },
-            { nome: "FABIO HENRIQUE ALMEIDA SANTOS", dia: "10/03/1978" },
-            { nome: "JORGE PEREIRA BARBOSA", dia: "10/03/1966" },
-            { nome: "ANTÔNIO BEZERRA COSTA FILHO", dia: "11/03/2000" },
-            { nome: "CIRO LIONEL DE OLIVEIRA FELIX", dia: "11/03/1988" },
-            { nome: "LUZIMEIRE MOTA HENRIQUE", dia: "11/03/1969" },
-            { nome: "ANDRE LUIS ALVES DOS SANTOS", dia: "12/03/1991" },
-            { nome: "JOSE BEZERRA DA SILVA JUNIOR", dia: "12/03/1980" },
-            { nome: "EDINALDO DOS ANJOS", dia: "12/03/1965" },
-            { nome: "GIVALDO MACHADO DOS SANTOS", dia: "12/03/1952" },
-            { nome: "LIVIA DANTAS TELES TRAVASSOS", dia: "13/03/1985" },
-            { nome: "JOSE IVAN DOS SANTOS", dia: "13/03/1965" },
-            { nome: "DURAND NORONHA SILVA JUNIOR", dia: "13/03/1962" },
-            { nome: "VITOR AZAEL DA CRUZ DE SOUZA", dia: "14/03/1984" },
-            { nome: "SERGIO RICARDO ORMELAS DE ANDRADE SANTOS", dia: "14/03/1977" },
-            { nome: "JOSE CARDOSO DE MENESES NETO", dia: "14/03/1975" },
-            { nome: "HELDER DANIEL DE SOUZA SA", dia: "14/03/1959" },
-            { nome: "VANESSA SANTOS GUIMARÃES", dia: "15/03/1984" },
-            { nome: "MARCOS CORREA", dia: "15/03/1980" },
-            { nome: "RICARDO LIMA CURVELO", dia: "15/03/1961" },
-            { nome: "HENRIQUE MAURICIO MENDONÇA CARDOSO", dia: "15/03/1960" },
-            { nome: "MANOEL RODRIGUES LIMA NETO", dia: "15/03/1941" },
-            { nome: "ANDREIA CRISTINA AZEVEDO GOMES", dia: "16/03/1973" },
-            { nome: "JOSE ROBERTO CARVALHO DA COSTA", dia: "16/03/1963" },
-            { nome: "JOSE ALBERTO MUNIZ BARRETO FILHO", dia: "16/03/1961" },
-            { nome: "JOSE MORAIS MONTEIRO", dia: "17/03/1959" },
-            { nome: "ALAN FILIPE BORGES SILVA", dia: "18/03/1991" },
-            { nome: "FRANCISCO EDSON DA SILVA", dia: "18/03/1981" },
-            { nome: "GEORGE ANDRÉ DOS SANTOS", dia: "18/03/1981" },
-            { nome: "JOSE DANTAS DE OLIVEIRA", dia: "18/03/1946" },
-            { nome: "KATHLEEN ANDRADE DOS SANTOS", dia: "19/03/1991" },
-            { nome: "CARLOS WAGNER GOMES DE OLIVEIRA", dia: "19/03/1976" },
-            { nome: "JOSE CARLOS NOGUEIRA SILVA", dia: "19/03/1957" },
-            { nome: "VERA LUCIA ALVES POCONE", dia: "19/03/1953" },
-            { nome: "JOAO CESAR FERREIRA MELO FERNANDES", dia: "20/03/1985" },
-            { nome: "WASHINGTON JOSE SANTOS", dia: "20/03/1962" },
-            { nome: "ALESSANDRO RESENDE ALVES", dia: "21/03/1993" },
-            { nome: "ELIELSON CORREIA DANTAS", dia: "21/03/1980" },
-            { nome: "ERISVERTON SANTOS", dia: "21/03/1973" },
-            { nome: "JETRO RIBEIRO MORAES", dia: "21/03/1966" },
-            { nome: "FERNANDA ALBUQUERQUE CABRAL", dia: "22/03/1980" },
-            { nome: "MARCELO DE GÒES JORGE", dia: "22/03/1977" },
-            { nome: "MANOEL DE CARVALHO NETO", dia: "22/03/1960" },
-            { nome: "JOSE MAGNO DE MELO", dia: "23/03/1998" },
-            { nome: "JOÃO CARLOS CARVALHO DA SILVA", dia: "23/03/1981" },
-            { nome: "ISLEY FEHLBERG", dia: "23/03/1980" },
-            { nome: "SERGIO VIEIRA SILVA", dia: "23/03/1965" },
-            { nome: "RAFAEL VASCONCELOS CARDOSO", dia: "24/03/1987" },
-            { nome: "EVERTON XAVIER DA SILVA", dia: "24/03/1981" },
-            { nome: "AIRTON RODRIGUES DO NASCIMENTO", dia: "24/03/1968" },
-            { nome: "JOSÉ DJALMA FREIRE", dia: "24/03/1966" },
-            { nome: "MARIA APARECIDA ALMEIDA BRITO", dia: "24/03/1959" },
-            { nome: "EDIGAR MENEZES FILHO", dia: "24/03/1956" },
-            { nome: "MARCOS ANTÔNIO SANTANA SANTOS", dia: "25/03/1991" },
-            { nome: "MICHEL SANTANA SANTOS", dia: "25/03/1991" },
-            { nome: "MARCOS SANTOS OLIVEIRA", dia: "25/03/1981" },
-            { nome: "JOSE FRANCISCO VIANA FILHO", dia: "25/03/1964" },
-            { nome: "WLADEMIR LUFRAN MARQUES SANTOS", dia: "27/03/1996" },
-            { nome: "MANOEL AFONSO DOS SANTOS", dia: "27/03/1986" },
-            { nome: "BRUNO BASTOS MELO", dia: "27/03/1981" },
-            { nome: "FRANCISCA ADRIANA GOMES SILVA", dia: "27/03/1970" },
-            { nome: "LUIZ VINICIUS PINA VIEIRA", dia: "28/03/1985" },
-            { nome: "ERINALDO TELES DOS SANTOS", dia: "28/03/1973" },
-            { nome: "MARCIO JOSE SEVERO DE MELO", dia: "29/03/1978" },
-            { nome: "JOSE RICARDO DE JESUS DOS SANTOS", dia: "29/03/1971" },
-            { nome: "IGOR SANTOS BARBOZA", dia: "30/03/1982" },
-            { nome: "ELIAS MARQUES BOMFIM JUNIOR", dia: "30/03/1981" },
-            { nome: "DEJA DE FIGUEIREDO", dia: "30/03/1964" },
-            { nome: "ANTONIO CARLOS DE OLIVEIRA MOURA", dia: "30/03/1953" },
-            { nome: "AGNALDO CARDOZO", dia: "30/03/1940" },
-            { nome: "RIVALDO DOS SANTOS MENEZES", dia: "31/03/1989" },
-            { nome: "JOSE FRANCISCO DE ALMEIDA", dia: "31/03/1960" },
-            { nome: "MARIA JOSE DE ANDRADE MATOS", dia: "31/03/1951" }
-        ];
+        // O ID da sua planilha do Google Sheets já está configurado aqui:
+        const SHEET_ID = '1td_jWW-5omOVpQRQS6kgljydipW-Mr0cJi91mLVt5UA'; 
+        
+        // URL para exportar os dados do Google Sheets como CSV
+        const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
         const grid = document.getElementById('grid');
+        const loading = document.getElementById('loading');
+        const tituloMes = document.getElementById('titulo-mes');
 
-        // Pega a data de hoje e formata para "DD/MM"
+        // Nomes dos meses para o título
+        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // Obtém a data de hoje
         const dataAtual = new Date();
+        const mesAtualNum = dataAtual.getMonth() + 1; // 1 a 12
+        const mesAtualStr = String(mesAtualNum).padStart(2, '0'); // "01" a "12"
         const diaHoje = String(dataAtual.getDate()).padStart(2, '0');
-        const mesHoje = String(dataAtual.getMonth() + 1).padStart(2, '0'); 
-        const dataHojeFormatada = `${diaHoje}/${mesHoje}`;
+        const dataHojeFormatada = `${diaHoje}/${mesAtualStr}`;
+
+        // Atualiza o título da página com o mês atual
+        tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[mesAtualNum - 1]} 🎉`;
 
         // Função para formatar o nome
         function formatarNome(nome) {
@@ -267,30 +184,73 @@
             ).join(' ');
         }
 
-        // Gera os cards
-        aniversariantes.forEach(pessoa => {
+        // Função para ler e processar os dados da planilha
+        async function carregarDados() {
+            try {
+                const response = await fetch(sheetUrl);
+                const data = await response.text();
+                
+                // Remove o aviso de "Carregando"
+                loading.style.display = 'none';
+
+                // Divide o CSV em linhas
+                const linhas = data.split('\n');
+                
+                // Variável para verificar se encontrou alguém
+                let encontrouAniversariantes = false;
+
+                // Começa na linha 1 para ignorar o cabeçalho (Nome, Data)
+                for (let i = 1; i < linhas.length; i++) {
+                    // Divide as colunas por vírgula
+                    const colunas = linhas[i].split(',');
+                    
+                    if (colunas.length >= 2) {
+                        const nomeOriginal = colunas[0].trim().replace(/['"]/g, ''); // Limpa aspas se houver
+                        const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); // Ex: 05/03/1980
+                        
+                        if (nomeOriginal && dataCompleta) {
+                            const diaMes = dataCompleta.substring(0, 5); // Pega apenas DD/MM
+                            const mesPessoa = diaMes.substring(3, 5); // Pega apenas o MM
+
+                            // Verifica se o mês do aniversário é o mês atual
+                            if (mesPessoa === mesAtualStr) {
+                                encontrouAniversariantes = true;
+                                criarCartao(nomeOriginal, diaMes);
+                            }
+                        }
+                    }
+                }
+
+                if (!encontrouAniversariantes) {
+                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registrados para este mês.</p>';
+                }
+
+            } catch (error) {
+                loading.innerText = 'Erro ao carregar os dados. Verifique se a planilha está compartilhada como "Qualquer pessoa com o link".';
+                console.error('Erro:', error);
+            }
+        }
+
+        function criarCartao(nome, diaMes) {
             const card = document.createElement('div');
             
-            // Extrai apenas o dia e mês da planilha (ex: "05/03")
-            const diaMes = pessoa.dia.substring(0, 5);
-
             // Verifica se o aniversário é hoje
             let ehHoje = (diaMes === dataHojeFormatada);
             
-            // Se for hoje, adiciona a classe "hoje" que criamos no CSS
             card.className = ehHoje ? 'card hoje' : 'card';
-
-            // Adiciona a faixa de "É Hoje!" apenas se for o dia
             const badgeHTML = ehHoje ? '<div class="badge-hoje">É Hoje! 🎉</div>' : '';
 
             card.innerHTML = `
                 ${badgeHTML}
-                <h2 class="name">${formatarNome(pessoa.nome)}</h2>
+                <h2 class="name">${formatarNome(nome)}</h2>
                 <div class="date">🎂 ${diaMes}</div>
             `;
             
             grid.appendChild(card);
-        });
+        }
+
+        // Inicia o carregamento
+        carregarDados();
     </script>
 </body>
 </html>
