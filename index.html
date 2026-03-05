@@ -154,74 +154,74 @@
     <main class="birthday-grid" id="grid"></main>
 
     <script>
-        // O ID da sua planilha do Google Sheets já está configurado aqui:
         const SHEET_ID = '1td_jWW-5omOVpQRQS6kgljydipW-Mr0cJi91mLVt5UA'; 
-        
-        // URL para exportar os dados do Google Sheets como CSV
         const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
         const grid = document.getElementById('grid');
         const loading = document.getElementById('loading');
         const tituloMes = document.getElementById('titulo-mes');
 
-        // Nomes dos meses para o título
         const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        // Obtém a data de hoje
         const dataAtual = new Date();
-        const mesAtualNum = dataAtual.getMonth() + 1; // 1 a 12
-        const mesAtualStr = String(mesAtualNum).padStart(2, '0'); // "01" a "12"
+        const mesAtualNum = dataAtual.getMonth() + 1; 
+        const mesAtualStr = String(mesAtualNum).padStart(2, '0'); 
         const diaHoje = String(dataAtual.getDate()).padStart(2, '0');
         const dataHojeFormatada = `${diaHoje}/${mesAtualStr}`;
 
-        // Atualiza o título da página com o mês atual
         tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[mesAtualNum - 1]} 🎉`;
 
-        // Função para formatar o nome
         function formatarNome(nome) {
             return nome.toLowerCase().split(' ').map(palavra => 
                 palavra.length > 2 ? palavra.charAt(0).toUpperCase() + palavra.slice(1) : palavra
             ).join(' ');
         }
 
-        // Função para ler e processar os dados da planilha
         async function carregarDados() {
             try {
                 const response = await fetch(sheetUrl);
                 const data = await response.text();
                 
-                // Remove o aviso de "Carregando"
                 loading.style.display = 'none';
 
-                // Divide o CSV em linhas
                 const linhas = data.split('\n');
                 
-                // Variável para verificar se encontrou alguém
-                let encontrouAniversariantes = false;
+                // Criamos uma lista vazia para guardar os aniversariantes antes de mostrar na tela
+                let aniversariantesDoMes = [];
 
-                // Começa na linha 1 para ignorar o cabeçalho (Nome, Data)
                 for (let i = 1; i < linhas.length; i++) {
-                    // Divide as colunas por vírgula
                     const colunas = linhas[i].split(',');
                     
                     if (colunas.length >= 2) {
-                        const nomeOriginal = colunas[0].trim().replace(/['"]/g, ''); // Limpa aspas se houver
-                        const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); // Ex: 05/03/1980
+                        const nomeOriginal = colunas[0].trim().replace(/['"]/g, ''); 
+                        const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); 
                         
                         if (nomeOriginal && dataCompleta) {
-                            const diaMes = dataCompleta.substring(0, 5); // Pega apenas DD/MM
-                            const mesPessoa = diaMes.substring(3, 5); // Pega apenas o MM
+                            const diaMes = dataCompleta.substring(0, 5); // Ex: 05/03
+                            const diaPessoa = parseInt(diaMes.substring(0, 2), 10); // Pega o dia como número
+                            const mesPessoa = diaMes.substring(3, 5); // Pega o mês
 
-                            // Verifica se o mês do aniversário é o mês atual
                             if (mesPessoa === mesAtualStr) {
-                                encontrouAniversariantes = true;
-                                criarCartao(nomeOriginal, diaMes);
+                                // Guarda na lista
+                                aniversariantesDoMes.push({
+                                    nome: nomeOriginal,
+                                    diaMes: diaMes,
+                                    diaNumero: diaPessoa
+                                });
                             }
                         }
                     }
                 }
 
-                if (!encontrouAniversariantes) {
+                if (aniversariantesDoMes.length > 0) {
+                    // Ordena a lista do menor dia para o maior dia
+                    aniversariantesDoMes.sort((a, b) => a.diaNumero - b.diaNumero);
+
+                    // Cria os cartões na tela já na ordem correta
+                    aniversariantesDoMes.forEach(pessoa => {
+                        criarCartao(pessoa.nome, pessoa.diaMes);
+                    });
+                } else {
                     grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registrados para este mês.</p>';
                 }
 
@@ -234,7 +234,6 @@
         function criarCartao(nome, diaMes) {
             const card = document.createElement('div');
             
-            // Verifica se o aniversário é hoje
             let ehHoje = (diaMes === dataHojeFormatada);
             
             card.className = ehHoje ? 'card hoje' : 'card';
@@ -249,7 +248,6 @@
             grid.appendChild(card);
         }
 
-        // Inicia o carregamento
         carregarDados();
     </script>
 </body>
