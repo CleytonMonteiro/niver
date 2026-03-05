@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aniversariantes do Mês - AABB Aracaju</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -23,7 +24,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         header h1 {
@@ -33,9 +34,42 @@
             text-transform: capitalize;
         }
 
-        header p {
+        #contador {
             font-size: 1.1rem;
             color: #7f8c8d;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Barra de Pesquisa */
+        .search-container {
+            max-width: 400px;
+            margin: 0 auto 3rem auto;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            border-radius: 30px;
+            border: 2px solid #cce0ff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        #searchInput:focus {
+            border-color: #003399;
+            box-shadow: 0 4px 12px rgba(0,51,153,0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
         }
 
         .loading {
@@ -47,7 +81,7 @@
 
         .birthday-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
@@ -56,7 +90,7 @@
         .card {
             background-color: #ffffff;
             border-radius: 15px;
-            padding: 2.5rem 1.5rem;
+            padding: 2rem 1.5rem;
             text-align: center;
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -66,7 +100,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 180px;
+            min-height: 220px;
         }
 
         .card:hover {
@@ -84,11 +118,27 @@
             background: linear-gradient(90deg, #003399 0%, #ffcc00 100%);
         }
 
+        /* Avatar com Iniciais */
+        .avatar-initials {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            letter-spacing: 1px;
+        }
+
         .name {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             text-transform: capitalize;
             line-height: 1.3;
         }
@@ -102,6 +152,7 @@
             border-radius: 20px;
             font-size: 0.9rem;
             border: 1px solid #cce0ff;
+            margin-top: auto;
         }
 
         .card.hoje {
@@ -147,10 +198,15 @@
 
     <header>
         <h1 id="titulo-mes">🎉 Aniversariantes do Mês 🎉</h1>
-        <p>Celebre com os nossos associados neste mês especial!</p>
+        <p id="contador">Celebre com os nossos associados neste mês especial!</p>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Pesquisar por nome...">
+        </div>
     </header>
 
-    <div id="loading" class="loading">Carregando aniversariantes...</div>
+    <div id="loading" class="loading">Carregando a festa... 🎈</div>
     <main class="birthday-grid" id="grid"></main>
 
     <script>
@@ -160,8 +216,13 @@
         const grid = document.getElementById('grid');
         const loading = document.getElementById('loading');
         const tituloMes = document.getElementById('titulo-mes');
+        const contador = document.getElementById('contador');
+        const searchInput = document.getElementById('searchInput');
 
         const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // Cores padrão para os avatares
+        const paletaCores = ['#003399', '#ffcc00', '#27ae60', '#e74c3c', '#8e44ad', '#16a085', '#d35400', '#2980b9'];
 
         const dataAtual = new Date();
         const mesAtualNum = dataAtual.getMonth() + 1; 
@@ -171,10 +232,29 @@
 
         tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[mesAtualNum - 1]} 🎉`;
 
+        // Função para formatar o nome
         function formatarNome(nome) {
             return nome.toLowerCase().split(' ').map(palavra => 
                 palavra.length > 2 ? palavra.charAt(0).toUpperCase() + palavra.slice(1) : palavra
             ).join(' ');
+        }
+
+        // Função para extrair as 2 letras iniciais (ignora "de", "da")
+        function pegarIniciais(nome) {
+            const palavras = nome.split(' ').filter(p => p.length > 2);
+            let iniciais = '';
+            if(palavras.length > 0) iniciais += palavras[0].charAt(0);
+            if(palavras.length > 1) iniciais += palavras[1].charAt(0);
+            return iniciais.toUpperCase() || 'AA';
+        }
+
+        // Atribui uma cor consistente baseada nas letras do nome
+        function pegarCorAvatar(nome) {
+            let soma = 0;
+            for(let i = 0; i < nome.length; i++) {
+                soma += nome.charCodeAt(i);
+            }
+            return paletaCores[soma % paletaCores.length];
         }
 
         async function carregarDados() {
@@ -185,8 +265,6 @@
                 loading.style.display = 'none';
 
                 const linhas = data.split('\n');
-                
-                // Criamos uma lista vazia para guardar os aniversariantes antes de mostrar na tela
                 let aniversariantesDoMes = [];
 
                 for (let i = 1; i < linhas.length; i++) {
@@ -197,12 +275,11 @@
                         const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); 
                         
                         if (nomeOriginal && dataCompleta) {
-                            const diaMes = dataCompleta.substring(0, 5); // Ex: 05/03
-                            const diaPessoa = parseInt(diaMes.substring(0, 2), 10); // Pega o dia como número
-                            const mesPessoa = diaMes.substring(3, 5); // Pega o mês
+                            const diaMes = dataCompleta.substring(0, 5);
+                            const diaPessoa = parseInt(diaMes.substring(0, 2), 10);
+                            const mesPessoa = diaMes.substring(3, 5);
 
                             if (mesPessoa === mesAtualStr) {
-                                // Guarda na lista
                                 aniversariantesDoMes.push({
                                     nome: nomeOriginal,
                                     diaMes: diaMes,
@@ -214,19 +291,32 @@
                 }
 
                 if (aniversariantesDoMes.length > 0) {
-                    // Ordena a lista do menor dia para o maior dia
+                    // 1. Atualiza o contador
+                    contador.innerHTML = `Temos <strong>${aniversariantesDoMes.length} motivos</strong> para celebrar este mês!`;
+
                     aniversariantesDoMes.sort((a, b) => a.diaNumero - b.diaNumero);
 
-                    // Cria os cartões na tela já na ordem correta
+                    let teveAniversarianteHoje = false;
+
                     aniversariantesDoMes.forEach(pessoa => {
                         criarCartao(pessoa.nome, pessoa.diaMes);
+                        if(pessoa.diaMes === dataHojeFormatada) {
+                            teveAniversarianteHoje = true;
+                        }
                     });
+
+                    // 2. Aciona os confetes se tiver alguém fazendo aniversário hoje!
+                    if(teveAniversarianteHoje) {
+                        soltarConfetes();
+                    }
+
                 } else {
+                    contador.innerHTML = "Aguardando novas celebrações...";
                     grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registrados para este mês.</p>';
                 }
 
             } catch (error) {
-                loading.innerText = 'Erro ao carregar os dados. Verifique se a planilha está compartilhada como "Qualquer pessoa com o link".';
+                loading.innerText = 'Erro ao carregar os dados. Verifique o link da planilha.';
                 console.error('Erro:', error);
             }
         }
@@ -235,17 +325,61 @@
             const card = document.createElement('div');
             
             let ehHoje = (diaMes === dataHojeFormatada);
-            
             card.className = ehHoje ? 'card hoje' : 'card';
+            
             const badgeHTML = ehHoje ? '<div class="badge-hoje">É Hoje! 🎉</div>' : '';
+            const nomeFormatado = formatarNome(nome);
+            const iniciais = pegarIniciais(nomeFormatado);
+            const corFundo = pegarCorAvatar(nome);
 
             card.innerHTML = `
                 ${badgeHTML}
-                <h2 class="name">${formatarNome(nome)}</h2>
+                <div class="avatar-initials" style="background-color: ${corFundo};">
+                    ${iniciais}
+                </div>
+                <h2 class="name">${nomeFormatado}</h2>
                 <div class="date">🎂 ${diaMes}</div>
             `;
             
             grid.appendChild(card);
+        }
+
+        // 3. Função do filtro de busca em tempo real
+        searchInput.addEventListener('input', function(e) {
+            const termoBusca = e.target.value.toLowerCase();
+            const cartoes = document.querySelectorAll('.card');
+
+            cartoes.forEach(cartao => {
+                const nomeNoCartao = cartao.querySelector('.name').innerText.toLowerCase();
+                if (nomeNoCartao.includes(termoBusca)) {
+                    cartao.style.display = 'flex';
+                } else {
+                    cartao.style.display = 'none';
+                }
+            });
+        });
+
+        // 4. Efeito especial de Chuva de Confetes
+        function soltarConfetes() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
         }
 
         carregarDados();
