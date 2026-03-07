@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,8 @@
             color: #333;
             min-height: 100vh;
             padding: 2rem;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -77,6 +79,7 @@
             font-size: 1.2rem;
             color: #003399;
             margin-top: 2rem;
+            flex-grow: 1;
         }
 
         .birthday-grid {
@@ -85,6 +88,8 @@
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
+            flex-grow: 1;
+            width: 100%;
         }
 
         .card {
@@ -192,12 +197,20 @@
             70% { box-shadow: 0 0 0 15px rgba(255, 204, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
         }
+
+        /* Estilo do Rodapé do Contador */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1 id="titulo-mes">🎉 Aniversariantes do Mês 🎉</h1>
+        
         <p id="contador">Celebre com os nossos associados neste mês especial!</p>
         
         <div class="search-container">
@@ -206,10 +219,16 @@
         </div>
     </header>
 
-    <div id="loading" class="loading">Carregando a festa... 🎈</div>
+    <div id="loading" class="loading">A preparar a festa... 🎈</div>
     <main class="birthday-grid" id="grid"></main>
 
+    <footer>
+        <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 10px;">Visualizações da página:</p>
+        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://cleytonmonteiro.github.io/niver/&count_bg=%23003399&title_bg=%23ffcc00&icon=&icon_color=%23E7E7E7&title=Visitas&edge_flat=false" alt="Contador de Visitas">
+    </footer>
+
     <script>
+        // ID da sua folha de cálculo no Google Sheets
         const SHEET_ID = '1td_jWW-5omOVpQRQS6kgljydipW-Mr0cJi91mLVt5UA'; 
         const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
@@ -221,7 +240,7 @@
 
         const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        // Cores padrão para os avatares
+        // Cores padrão para os avatares (Cores AABB + outras complementares)
         const paletaCores = ['#003399', '#ffcc00', '#27ae60', '#e74c3c', '#8e44ad', '#16a085', '#d35400', '#2980b9'];
 
         const dataAtual = new Date();
@@ -268,7 +287,13 @@
                 let aniversariantesDoMes = [];
 
                 for (let i = 1; i < linhas.length; i++) {
-                    const colunas = linhas[i].split(',');
+                    // Deteta automaticamente se o Google Sheets exportou com vírgula ou ponto e vírgula
+                    let separador = ',';
+                    if (linhas[i].includes(';')) {
+                        separador = ';';
+                    }
+                    
+                    const colunas = linhas[i].split(separador);
                     
                     if (colunas.length >= 2) {
                         const nomeOriginal = colunas[0].trim().replace(/['"]/g, ''); 
@@ -291,9 +316,10 @@
                 }
 
                 if (aniversariantesDoMes.length > 0) {
-                    // 1. Atualiza o contador
+                    // Atualiza o contador de aniversariantes
                     contador.innerHTML = `Temos <strong>${aniversariantesDoMes.length} motivos</strong> para celebrar este mês!`;
 
+                    // Ordena por dia do mês
                     aniversariantesDoMes.sort((a, b) => a.diaNumero - b.diaNumero);
 
                     let teveAniversarianteHoje = false;
@@ -305,18 +331,18 @@
                         }
                     });
 
-                    // 2. Aciona os confetes se tiver alguém fazendo aniversário hoje!
+                    // Aciona os confetes se houver alguém a fazer anos hoje
                     if(teveAniversarianteHoje) {
                         soltarConfetes();
                     }
 
                 } else {
-                    contador.innerHTML = "Aguardando novas celebrações...";
-                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registrados para este mês.</p>';
+                    contador.innerHTML = "A aguardar novas celebrações...";
+                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registados para este mês.</p>';
                 }
 
             } catch (error) {
-                loading.innerText = 'Erro ao carregar os dados. Verifique o link da planilha.';
+                loading.innerText = 'Erro ao carregar os dados. Verifique o link da folha de cálculo.';
                 console.error('Erro:', error);
             }
         }
@@ -344,7 +370,7 @@
             grid.appendChild(card);
         }
 
-        // 3. Função do filtro de busca em tempo real
+        // Filtro de busca em tempo real
         searchInput.addEventListener('input', function(e) {
             const termoBusca = e.target.value.toLowerCase();
             const cartoes = document.querySelectorAll('.card');
@@ -359,7 +385,7 @@
             });
         });
 
-        // 4. Efeito especial de Chuva de Confetes
+        // Efeito especial de Chuva de Confetes
         function soltarConfetes() {
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
