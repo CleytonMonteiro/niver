@@ -43,35 +43,46 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Barra de Pesquisa */
-        .search-container {
-            max-width: 400px;
+        /* ---------------------------------------------------
+           DICA DE MESTRE 1: Barra de Pesquisa Flutuante 
+        ---------------------------------------------------- */
+        .search-wrapper {
+            position: sticky;
+            top: 20px; /* Fica a 20px do topo ao rolar */
+            z-index: 100; /* Garante que fica por cima dos cartões */
             margin: 0 auto 3rem auto;
+            max-width: 400px;
+        }
+
+        .search-container {
             position: relative;
         }
 
         #searchInput {
             width: 100%;
-            padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+            padding: 0.9rem 1.5rem 0.9rem 2.8rem;
             border-radius: 30px;
             border: 2px solid #cce0ff;
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 20px rgba(0,51,153,0.1); /* Sombra mais elegante */
+            background-color: rgba(255, 255, 255, 0.95); /* Fundo ligeiramente transparente */
+            backdrop-filter: blur(5px); /* Efeito de vidro moderno */
         }
 
         #searchInput:focus {
             border-color: #003399;
-            box-shadow: 0 4px 12px rgba(0,51,153,0.15);
+            box-shadow: 0 10px 25px rgba(0,51,153,0.2);
         }
 
         .search-icon {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.2rem;
+            z-index: 101;
         }
 
         .loading {
@@ -90,6 +101,28 @@
             margin: 0 auto;
             flex-grow: 1;
             width: 100%;
+        }
+
+        /* ---------------------------------------------------
+           DICA DE MESTRE 2: Estilo da Mensagem de Erro
+        ---------------------------------------------------- */
+        #noResults {
+            display: none;
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            border: 2px dashed #cce0ff;
+        }
+
+        #noResults h3 {
+            color: #003399;
+            margin-bottom: 0.5rem;
+        }
+
+        #noResults p {
+            color: #7f8c8d;
         }
 
         .card {
@@ -123,7 +156,6 @@
             background: linear-gradient(90deg, #003399 0%, #ffcc00 100%);
         }
 
-        /* Avatar com Iniciais */
         .avatar-initials {
             width: 65px;
             height: 65px;
@@ -198,7 +230,6 @@
             100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
         }
 
-        /* Estilo do Rodapé do Contador */
         footer {
             text-align: center;
             margin-top: 4rem;
@@ -210,17 +241,24 @@
 
     <header>
         <h1 id="titulo-mes">🎉 Aniversariantes do Mês 🎉</h1>
-        
         <p id="contador">Celebre com os nossos associados neste mês especial!</p>
-        
+    </header>
+
+    <div class="search-wrapper">
         <div class="search-container">
             <span class="search-icon">🔍</span>
             <input type="text" id="searchInput" placeholder="Pesquisar por nome...">
         </div>
-    </header>
+    </div>
 
     <div id="loading" class="loading">A preparar a festa... 🎈</div>
-    <main class="birthday-grid" id="grid"></main>
+    
+    <main class="birthday-grid" id="grid">
+        <div id="noResults">
+            <h3>😕 Ops!</h3>
+            <p>Não encontrámos nenhum associado com esse nome neste mês.</p>
+        </div>
+    </main>
 
     <footer>
         <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 10px;">Visualizações da página:</p>
@@ -230,7 +268,6 @@
     </footer>
 
     <script>
-        // ID da sua folha de cálculo no Google Sheets
         const SHEET_ID = '1td_jWW-5omOVpQRQS6kgljydipW-Mr0cJi91mLVt5UA'; 
         const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
@@ -239,10 +276,10 @@
         const tituloMes = document.getElementById('titulo-mes');
         const contador = document.getElementById('contador');
         const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
 
         const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        // Cores padrão para os avatares (Cores AABB + outras complementares)
         const paletaCores = ['#003399', '#ffcc00', '#27ae60', '#e74c3c', '#8e44ad', '#16a085', '#d35400', '#2980b9'];
 
         const dataAtual = new Date();
@@ -253,14 +290,12 @@
 
         tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[mesAtualNum - 1]} 🎉`;
 
-        // Função para formatar o nome
         function formatarNome(nome) {
             return nome.toLowerCase().split(' ').map(palavra => 
                 palavra.length > 2 ? palavra.charAt(0).toUpperCase() + palavra.slice(1) : palavra
             ).join(' ');
         }
 
-        // Função para extrair as 2 letras iniciais (ignora "de", "da")
         function pegarIniciais(nome) {
             const palavras = nome.split(' ').filter(p => p.length > 2);
             let iniciais = '';
@@ -269,7 +304,6 @@
             return iniciais.toUpperCase() || 'AA';
         }
 
-        // Atribui uma cor consistente baseada nas letras do nome
         function pegarCorAvatar(nome) {
             let soma = 0;
             for(let i = 0; i < nome.length; i++) {
@@ -289,7 +323,6 @@
                 let aniversariantesDoMes = [];
 
                 for (let i = 1; i < linhas.length; i++) {
-                    // Deteta automaticamente se o Google Sheets exportou com vírgula ou ponto e vírgula
                     let separador = ',';
                     if (linhas[i].includes(';')) {
                         separador = ';';
@@ -302,26 +335,28 @@
                         const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); 
                         
                         if (nomeOriginal && dataCompleta) {
-                            const diaMes = dataCompleta.substring(0, 5);
-                            const diaPessoa = parseInt(diaMes.substring(0, 2), 10);
-                            const mesPessoa = diaMes.substring(3, 5);
+                            // Dica de Mestre bónus: Garante que lê as datas mesmo que alguém não digite o zero (ex: "5/3/1980")
+                            const partesData = dataCompleta.split('/');
+                            if(partesData.length >= 2) {
+                                const diaPessoa = parseInt(partesData[0], 10);
+                                const mesPessoaNum = parseInt(partesData[1], 10);
+                                const mesPessoaStr = String(mesPessoaNum).padStart(2, '0');
+                                const diaMesFormatado = `${String(diaPessoa).padStart(2, '0')}/${mesPessoaStr}`;
 
-                            if (mesPessoa === mesAtualStr) {
-                                aniversariantesDoMes.push({
-                                    nome: nomeOriginal,
-                                    diaMes: diaMes,
-                                    diaNumero: diaPessoa
-                                });
+                                if (mesPessoaStr === mesAtualStr) {
+                                    aniversariantesDoMes.push({
+                                        nome: nomeOriginal,
+                                        diaMes: diaMesFormatado,
+                                        diaNumero: diaPessoa
+                                    });
+                                }
                             }
                         }
                     }
                 }
 
                 if (aniversariantesDoMes.length > 0) {
-                    // Atualiza o contador de aniversariantes
                     contador.innerHTML = `Temos <strong>${aniversariantesDoMes.length} motivos</strong> para celebrar este mês!`;
-
-                    // Ordena por dia do mês
                     aniversariantesDoMes.sort((a, b) => a.diaNumero - b.diaNumero);
 
                     let teveAniversarianteHoje = false;
@@ -333,14 +368,14 @@
                         }
                     });
 
-                    // Aciona os confetes se houver alguém a fazer anos hoje
                     if(teveAniversarianteHoje) {
                         soltarConfetes();
                     }
 
                 } else {
                     contador.innerHTML = "A aguardar novas celebrações...";
-                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem;">Não há aniversariantes registados para este mês.</p>';
+                    loading.innerText = 'Não há aniversariantes registados para este mês.';
+                    loading.style.display = 'block';
                 }
 
             } catch (error) {
@@ -353,7 +388,7 @@
             const card = document.createElement('div');
             
             let ehHoje = (diaMes === dataHojeFormatada);
-            card.className = ehHoje ? 'card hoje' : 'card';
+            card.className = ehHoje ? 'card hoje cartao-associado' : 'card cartao-associado';
             
             const badgeHTML = ehHoje ? '<div class="badge-hoje">É Hoje! 🎉</div>' : '';
             const nomeFormatado = formatarNome(nome);
@@ -372,22 +407,30 @@
             grid.appendChild(card);
         }
 
-        // Filtro de busca em tempo real
+        // Nova Lógica de Pesquisa com Feedback
         searchInput.addEventListener('input', function(e) {
             const termoBusca = e.target.value.toLowerCase();
-            const cartoes = document.querySelectorAll('.card');
+            const cartoes = document.querySelectorAll('.cartao-associado');
+            let encontrouAlguem = false;
 
             cartoes.forEach(cartao => {
                 const nomeNoCartao = cartao.querySelector('.name').innerText.toLowerCase();
                 if (nomeNoCartao.includes(termoBusca)) {
                     cartao.style.display = 'flex';
+                    encontrouAlguem = true;
                 } else {
                     cartao.style.display = 'none';
                 }
             });
+
+            // Mostra a mensagem de "Ops!" se não encontrar ninguém
+            if (!encontrouAlguem && cartoes.length > 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
         });
 
-        // Efeito especial de Chuva de Confetes
         function soltarConfetes() {
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
