@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aniversariantes do Mês - AABB Aracaju</title>
+    <title>Aniversariantes - AABB Aracaju</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -34,6 +34,7 @@
             color: #003399;
             margin-bottom: 0.5rem;
             text-transform: capitalize;
+            transition: all 0.3s ease;
         }
 
         #contador {
@@ -43,19 +44,42 @@
             margin-bottom: 1.5rem;
         }
 
-        /* ---------------------------------------------------
-           DICA DE MESTRE 1: Barra de Pesquisa Flutuante 
-        ---------------------------------------------------- */
-        .search-wrapper {
+        /* Container Flutuante para os Controles */
+        .controls-wrapper {
             position: sticky;
-            top: 20px; /* Fica a 20px do topo ao rolar */
-            z-index: 100; /* Garante que fica por cima dos cartões */
+            top: 20px;
+            z-index: 100;
             margin: 0 auto 3rem auto;
-            max-width: 400px;
+            max-width: 600px;
+            display: flex;
+            gap: 10px;
         }
 
+        /* Estilo do Select (Filtro de Mês) */
+        .month-filter {
+            padding: 0.9rem 1.5rem;
+            border-radius: 30px;
+            border: 2px solid #cce0ff;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            color: #003399;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(0,51,153,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .month-filter:focus, .month-filter:hover {
+            border-color: #003399;
+            box-shadow: 0 10px 25px rgba(0,51,153,0.2);
+        }
+
+        /* Barra de Pesquisa */
         .search-container {
             position: relative;
+            flex-grow: 1;
         }
 
         #searchInput {
@@ -66,9 +90,9 @@
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,51,153,0.1); /* Sombra mais elegante */
-            background-color: rgba(255, 255, 255, 0.95); /* Fundo ligeiramente transparente */
-            backdrop-filter: blur(5px); /* Efeito de vidro moderno */
+            box-shadow: 0 10px 20px rgba(0,51,153,0.1);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
         }
 
         #searchInput:focus {
@@ -103,9 +127,6 @@
             width: 100%;
         }
 
-        /* ---------------------------------------------------
-           DICA DE MESTRE 2: Estilo da Mensagem de Erro
-        ---------------------------------------------------- */
         #noResults {
             display: none;
             grid-column: 1 / -1;
@@ -235,23 +256,45 @@
             margin-top: 4rem;
             padding-bottom: 1rem;
         }
+
+        /* Responsividade para celular */
+        @media (max-width: 600px) {
+            .controls-wrapper {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="titulo-mes">🎉 Aniversariantes do Mês 🎉</h1>
-        <p id="contador">Celebre com os nossos associados neste mês especial!</p>
+        <h1 id="titulo-mes">🎉 Aniversariantes 🎉</h1>
+        <p id="contador">Celebre com os nossos associados!</p>
     </header>
 
-    <div class="search-wrapper">
+    <div class="controls-wrapper">
+        <select id="monthFilter" class="month-filter">
+            <option value="01">Janeiro</option>
+            <option value="02">Fevereiro</option>
+            <option value="03">Março</option>
+            <option value="04">Abril</option>
+            <option value="05">Maio</option>
+            <option value="06">Junho</option>
+            <option value="07">Julho</option>
+            <option value="08">Agosto</option>
+            <option value="09">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+        </select>
+
         <div class="search-container">
             <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Pesquisar por nome...">
+            <input type="text" id="searchInput" placeholder="Pesquisar associado...">
         </div>
     </div>
 
-    <div id="loading" class="loading">A preparar a festa... 🎈</div>
+    <div id="loading" class="loading">A preparar a lista... 🎈</div>
     
     <main class="birthday-grid" id="grid">
         <div id="noResults">
@@ -276,19 +319,22 @@
         const tituloMes = document.getElementById('titulo-mes');
         const contador = document.getElementById('contador');
         const searchInput = document.getElementById('searchInput');
+        const monthFilter = document.getElementById('monthFilter');
         const noResults = document.getElementById('noResults');
 
         const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
         const paletaCores = ['#003399', '#ffcc00', '#27ae60', '#e74c3c', '#8e44ad', '#16a085', '#d35400', '#2980b9'];
 
         const dataAtual = new Date();
-        const mesAtualNum = dataAtual.getMonth() + 1; 
-        const mesAtualStr = String(mesAtualNum).padStart(2, '0'); 
+        const mesAtualStr = String(dataAtual.getMonth() + 1).padStart(2, '0'); 
         const diaHoje = String(dataAtual.getDate()).padStart(2, '0');
         const dataHojeFormatada = `${diaHoje}/${mesAtualStr}`;
 
-        tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[mesAtualNum - 1]} 🎉`;
+        // Variável para armazenar TODOS os dados lidos da planilha
+        let todosOsAssociados = [];
+
+        // Define o seletor de mês para o mês atual assim que a página carrega
+        monthFilter.value = mesAtualStr;
 
         function formatarNome(nome) {
             return nome.toLowerCase().split(' ').map(palavra => 
@@ -312,21 +358,17 @@
             return paletaCores[soma % paletaCores.length];
         }
 
-        async function carregarDados() {
+        async function carregarDadosIniciais() {
             try {
                 const response = await fetch(sheetUrl);
                 const data = await response.text();
                 
                 loading.style.display = 'none';
-
                 const linhas = data.split('\n');
-                let aniversariantesDoMes = [];
 
                 for (let i = 1; i < linhas.length; i++) {
                     let separador = ',';
-                    if (linhas[i].includes(';')) {
-                        separador = ';';
-                    }
+                    if (linhas[i].includes(';')) separador = ';';
                     
                     const colunas = linhas[i].split(separador);
                     
@@ -335,7 +377,6 @@
                         const dataCompleta = colunas[1].trim().replace(/['"]/g, ''); 
                         
                         if (nomeOriginal && dataCompleta) {
-                            // Dica de Mestre bónus: Garante que lê as datas mesmo que alguém não digite o zero (ex: "5/3/1980")
                             const partesData = dataCompleta.split('/');
                             if(partesData.length >= 2) {
                                 const diaPessoa = parseInt(partesData[0], 10);
@@ -343,44 +384,62 @@
                                 const mesPessoaStr = String(mesPessoaNum).padStart(2, '0');
                                 const diaMesFormatado = `${String(diaPessoa).padStart(2, '0')}/${mesPessoaStr}`;
 
-                                if (mesPessoaStr === mesAtualStr) {
-                                    aniversariantesDoMes.push({
-                                        nome: nomeOriginal,
-                                        diaMes: diaMesFormatado,
-                                        diaNumero: diaPessoa
-                                    });
-                                }
+                                todosOsAssociados.push({
+                                    nome: nomeOriginal,
+                                    diaMes: diaMesFormatado,
+                                    diaNumero: diaPessoa,
+                                    mesStr: mesPessoaStr
+                                });
                             }
                         }
                     }
                 }
-
-                if (aniversariantesDoMes.length > 0) {
-                    contador.innerHTML = `Temos <strong>${aniversariantesDoMes.length} motivos</strong> para celebrar este mês!`;
-                    aniversariantesDoMes.sort((a, b) => a.diaNumero - b.diaNumero);
-
-                    let teveAniversarianteHoje = false;
-
-                    aniversariantesDoMes.forEach(pessoa => {
-                        criarCartao(pessoa.nome, pessoa.diaMes);
-                        if(pessoa.diaMes === dataHojeFormatada) {
-                            teveAniversarianteHoje = true;
-                        }
-                    });
-
-                    if(teveAniversarianteHoje) {
-                        soltarConfetes();
-                    }
-
-                } else {
-                    contador.innerHTML = "A aguardar novas celebrações...";
-                    loading.innerText = 'Não há aniversariantes registados para este mês.';
-                    loading.style.display = 'block';
-                }
+                
+                // Após carregar tudo, renderiza o mês selecionado (mês atual por padrão)
+                renderizarMes(monthFilter.value);
 
             } catch (error) {
                 loading.innerText = 'Erro ao carregar os dados. Verifique o link da folha de cálculo.';
+                loading.style.display = 'block';
                 console.error('Erro:', error);
+            }
+        }
+
+        // Função que desenha os cartões na tela com base no mês escolhido
+        function renderizarMes(mesFiltro) {
+            // Limpa os cartões antigos da tela (mantendo a div do noResults)
+            document.querySelectorAll('.cartao-associado').forEach(el => el.remove());
+            noResults.style.display = 'none';
+            searchInput.value = ''; // Limpa a barra de pesquisa ao mudar de mês
+
+            // Atualiza o Título
+            const indexMes = parseInt(mesFiltro, 10) - 1;
+            tituloMes.innerHTML = `🎉 Aniversariantes de ${nomesMeses[indexMes]} 🎉`;
+
+            // Filtra os associados pelo mês
+            let filtrados = todosOsAssociados.filter(p => p.mesStr === mesFiltro);
+
+            if (filtrados.length > 0) {
+                contador.innerHTML = `Temos <strong>${filtrados.length} motivos</strong> para celebrar este mês!`;
+                filtrados.sort((a, b) => a.diaNumero - b.diaNumero);
+
+                let teveAniversarianteHoje = false;
+
+                filtrados.forEach(pessoa => {
+                    criarCartao(pessoa.nome, pessoa.diaMes);
+                    if(pessoa.diaMes === dataHojeFormatada) {
+                        teveAniversarianteHoje = true;
+                    }
+                });
+
+                // Confetes apenas se houver alguém a fazer anos hoje e se estiver a visualizar o mês atual!
+                if(teveAniversarianteHoje && mesFiltro === mesAtualStr) {
+                    soltarConfetes();
+                }
+
+            } else {
+                contador.innerHTML = "A aguardar novas celebrações...";
+                grid.innerHTML += '<p class="cartao-associado" style="grid-column: 1 / -1; text-align: center; color: #7f8c8d; font-size: 1.1rem; width: 100%;">Não há aniversariantes registados para este mês.</p>';
             }
         }
 
@@ -407,24 +466,30 @@
             grid.appendChild(card);
         }
 
-        // Nova Lógica de Pesquisa com Feedback
+        // Listener para mudança de mês no Select
+        monthFilter.addEventListener('change', function(e) {
+            renderizarMes(e.target.value);
+        });
+
+        // Pesquisa
         searchInput.addEventListener('input', function(e) {
             const termoBusca = e.target.value.toLowerCase();
             const cartoes = document.querySelectorAll('.cartao-associado');
             let encontrouAlguem = false;
 
             cartoes.forEach(cartao => {
-                const nomeNoCartao = cartao.querySelector('.name').innerText.toLowerCase();
-                if (nomeNoCartao.includes(termoBusca)) {
-                    cartao.style.display = 'flex';
-                    encontrouAlguem = true;
-                } else {
-                    cartao.style.display = 'none';
+                if(cartao.tagName.toLowerCase() === 'div') { // Ignora parágrafos de mensagem vazia
+                    const nomeNoCartao = cartao.querySelector('.name').innerText.toLowerCase();
+                    if (nomeNoCartao.includes(termoBusca)) {
+                        cartao.style.display = 'flex';
+                        encontrouAlguem = true;
+                    } else {
+                        cartao.style.display = 'none';
+                    }
                 }
             });
 
-            // Mostra a mensagem de "Ops!" se não encontrar ninguém
-            if (!encontrouAlguem && cartoes.length > 0) {
+            if (!encontrouAlguem && cartoes.length > 0 && cartoes[0].tagName.toLowerCase() === 'div') {
                 noResults.style.display = 'block';
             } else {
                 noResults.style.display = 'none';
@@ -436,24 +501,18 @@
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-            function randomInRange(min, max) {
-              return Math.random() * (max - min) + min;
-            }
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
             var interval = setInterval(function() {
               var timeLeft = animationEnd - Date.now();
-
-              if (timeLeft <= 0) {
-                return clearInterval(interval);
-              }
-
+              if (timeLeft <= 0) return clearInterval(interval);
               var particleCount = 50 * (timeLeft / duration);
               confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
               confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
         }
 
-        carregarDados();
+        carregarDadosIniciais();
     </script>
 </body>
 </html>
